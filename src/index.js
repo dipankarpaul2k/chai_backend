@@ -1,8 +1,22 @@
 import "dotenv/config";
+import express from "express";
 
 import dbConnection from "./db/db.connection.js";
 
+const app = express();
+
 dbConnection();
+
+const server = app.listen(process.env.PORT, () => {
+  console.log(`App is listening on ${process.env.PORT}`);
+});
+
+process.on("SIGTERM", () => {
+  debug("SIGTERM signal received: closing HTTP server");
+  server.close(() => {
+    debug("HTTP server closed");
+  });
+});
 
 /*
 import express from "express";
