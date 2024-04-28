@@ -1,22 +1,28 @@
 import "dotenv/config";
-import express from "express";
-
 import dbConnection from "./db/db.connection.js";
+import app from "./app.js";
 
-const app = express();
+const port = process.env.PORT || 8000;
 
-dbConnection();
-
-const server = app.listen(process.env.PORT, () => {
-  console.log(`App is listening on ${process.env.PORT}`);
-});
-
-process.on("SIGTERM", () => {
-  debug("SIGTERM signal received: closing HTTP server");
-  server.close(() => {
-    debug("HTTP server closed");
+dbConnection()
+  .then(function () {
+    app.on("connecting", () => {
+      console.log("Mongoose is connecting to the MongoDB server...");
+    });
+    app.on("connected", () => {
+      console.log("Mongoose successfully connected to the MongoDB server.");
+    });
+    app.on("error", (error) => {
+      console.log("An error occurs on a connection.\n", error);
+      throw error;
+    });
+    app.listen(port, () => {
+      console.log(`App is listening on ${port}`);
+    });
+  })
+  .catch(function (error) {
+    console.log("Error while connecting MongoDB.\n", error);
   });
-});
 
 /*
 import express from "express";
